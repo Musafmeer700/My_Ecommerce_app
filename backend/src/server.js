@@ -1,26 +1,34 @@
 import express from 'express';
 import path from 'path';
 import { ENV } from './config/env.js';
+import { connectDB } from './config/db.js';
+import { clerkMiddleware } from '@clerk/express'
 
 
 
-const app = express()
+const app = express();
 
-const __dirname = path.resolve()
+const __dirname = path.resolve();
+
+//middlewares
+app.use(clerkMiddleware()) //it add req.auth to request
 
 
 app.get("/api/health", (req, res) => {
-    res.status(200).json({message: "success"})
+    res.status(200).json({message: "success"});
 });
 
 if(ENV.NODE_ENV === "production"){
-    app.use(express.static(path.join(__dirname, "../admin/dist")))
+    app.use(express.static(path.join(__dirname, "../admin/dist")));
 
     app.get("/{*any}", (req, res) => {
         res.sendFile(path.join(__dirname, "../admin", "dist", "index.html"))
-    })
+    });
 }
 
-app.listen(3000, () => console.log("server is running 123332"));
+app.listen(ENV.PORT, () => {
+    console.log("server is running 123332");
+    connectDB();
+});
 
 
