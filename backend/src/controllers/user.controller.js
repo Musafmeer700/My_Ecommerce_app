@@ -138,7 +138,7 @@ export async function removeFromWishlist(req, res) {
         user.wishlist.pull(productId);
         await user.save();
 
-        res.status(200).json({message: "product added to wishlist", wishlist: user.wishlist})
+        res.status(200).json({message: "product remove to wishlist", wishlist: user.wishlist})
 
     } catch (error) {
         console.error("Error in deleting product from wishlist:", error);
