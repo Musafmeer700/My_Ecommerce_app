@@ -8,6 +8,7 @@ import { functions, inngest } from './config/inngest.js';
 
 
 import adminRoutes from "./routes/admin.route.js"
+import userRoutes from "./routes/user.route.js"
 
 
 
@@ -22,6 +23,7 @@ app.use(express.json())
 
 app.use("/api/inngest", serve({client: inngest, functions}));
 app.use("/api/admin", adminRoutes);
+app.use("/api/users", userRoutes);
 
 
 //testing

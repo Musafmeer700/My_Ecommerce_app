@@ -14,7 +14,7 @@ router.put("/products/:id", upload.array("images", 3), updateProducts)
 router.get("/order", getAllOrders)
 router.patch("/order/:orderId/status", updateOrderStatus)
 
-router.get("/customer", getAllCustomers)
+router.get("/customers", getAllCustomers)
 router.get("/stats", getDashboardStats)
 
 export default router;
