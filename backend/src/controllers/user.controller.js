@@ -5,6 +5,10 @@ export async function addAddress(req, res) {
         const {label, fullName, streetAddress, city, state, zipCode, phoneNumber, isDefault} = req.body;
         const user = req.user;
 
+        if(!fullName || !streetAddress || !city || !state || !zipCode){
+            return res.status(400).json({message: "Missing required Feilds"});
+        }
+
         // this unset all other addresses from default to non default 
         if(isDefault){
             user.addresses.forEach((addr) => {
@@ -84,7 +88,7 @@ export async function deleteAddress(req, res) {
         const {addressId} = req.params;
         const user = req.user;
 
-        user.addAddress.pull(addressId);
+        user.addresses.pull(addressId);
         await user.save()
 
         res.status(200).json({message: "address deleted successfully", addresses: user.addresses})
@@ -100,9 +104,12 @@ export async function addToWishlist(req, res) {
         const user = req.user;
 
         // check if the product is already in wishlist
-        if(user.wishlist.includes(productId)){
-            return res.status(400).json({error: "product already in the wishlist"});
-        }
+        const hasProduct = user.wishlist.some(
+            (id) => id?.equals?.(productId) || String(id) === String(productId)
+        );
+        if(hasProduct){
+             return res.status(400).json({error: "product already in the wishlist"});
+         }
 
         user.wishlist.push(productId)
         await user.save()
@@ -121,9 +128,12 @@ export async function removeFromWishlist(req, res) {
         const user = req.user;
 
         // check if the product is already in wishlist
-        if(!user.wishlist.includes(productId)){
-            return res.status(400).json({error: "product is not even in the wishlist"});
-        }
+        const hasProduct = user.wishlist.some(
+            (id) => id?.equals?.(productId) || String(id) === String(productId)
+        );
+        if(!hasProduct){
+             return res.status(400).json({error: "product is not even in the wishlist"});
+         }
 
         user.wishlist.pull(productId);
         await user.save();
@@ -138,7 +148,7 @@ export async function removeFromWishlist(req, res) {
 
 export async function getWishlist(req, res) {
     try {
-        const user = req.user;
+        const user = await User.findById(req.user._id).populate("wishlist");
         res.status(200).json({wishlist: user.wishlist})
     } catch (error) {
         console.error("Error in fetching product from wishlist:", error);
