@@ -1,8 +1,6 @@
-
 import cloudinary from "../config/cloudinary.js";
 import { Order } from "../models/oder.model.js";
 import { Product } from "../models/product.model.js";
-import { Aggregate } from "mongoose";
 import { User } from "../models/user.model.js";
 
 export async function createProduct(req, res) {
@@ -52,7 +50,7 @@ export async function createProduct(req, res) {
 
 export async function getAllProducts(_, res) {
   try {
-    const products = (await Product.find()).toSorted({ createdAt: -1 }); //-1 means decending(most recents one)
+    const products = (await Product.find()).Sort({ createdAt: -1 }); //-1 means decending(most recents one)
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching product", error);
@@ -72,7 +70,7 @@ export async function updateProducts(req, res) {
 
     if (name) product.name = name;
     if (description) product.description = description;
-    if (price) product.price = parseFloat(price);
+    if (price !== undefined) product.price = parseFloat(price);
     if (stock !== undefined) product.stock = parseInt(stock);
     if (category) product.category = category;
 
@@ -114,7 +112,7 @@ export async function getAllOrders(req, res) {
   }
 }
 
-export async function updateOrderStatus() {
+export async function updateOrderStatus(req, res) {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
@@ -123,9 +121,9 @@ export async function updateOrderStatus() {
       return res.status(400).json({ error: "invalid status" });
     }
 
-    const order = Order.findById(orderId);
+    const order = await Order.findById(orderId);
     if (!order) {
-      res.status(404).json({ message: "order not found" });
+      return res.status(404).json({ message: "order not found" });
     }
 
     order.status = status;
@@ -134,7 +132,7 @@ export async function updateOrderStatus() {
       order.shippedAt = new Date();
     }
 
-    if (status === "delivered" && !order.shippedAt) {
+    if (status === "delivered" && !order.deliveredAt) {
       order.deliveredAt = new Date();
     }
 
@@ -162,17 +160,17 @@ export async function getAllCustomers(_, res) {
 export async function getDashboardStats(_, res) {
   try {
     const totalOrders = await Order.countDocuments();
-    const revnueResult =
-      (await Orders) >
-      Aggregate({
+    const revenueResult = await Order.aggregate([
+      +{
         $group: {
           _id: null,
           total: {
-            $sum: "totalPrice",
+            $sum: "$totalPrice",
           },
         },
-      });
-    const totalRevenue = revnueResult[0]?.total || 0;
+      },
+    ]);
+    const totalRevenue = revenueResult[0]?.total || 0;
 
     const totalCustomers = await User.countDocuments();
     const totalProducts = await Product.countDocuments();
