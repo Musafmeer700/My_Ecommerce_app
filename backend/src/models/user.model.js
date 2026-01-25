@@ -57,7 +57,7 @@ const userSchema = new mongoose.Schema({
     addresses: [addressSchema],
 
     //array of product id like [1,2,3,4,...]
-    whishlist: [
+    wishlist: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "product"
