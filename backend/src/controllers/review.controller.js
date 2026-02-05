@@ -1,6 +1,6 @@
-import { Order } from "../models/order.model";
-import { Product } from "../models/product.model";
-import { Review } from "../models/review.model";
+import { Order } from "../models/order.model.js";
+import { Product } from "../models/product.model.js";
+import { Review } from "../models/review.model.js";
 
 export async function createReview(req, res) {
   try {
@@ -55,14 +55,29 @@ export async function createReview(req, res) {
       rating,
     });
 
-    //update product rating
-    const product = await Product.findById(productId);
+    // // atomic update or create
+    // const review = await Review.findOneAndUpdate(
+    //   { productId, userId: user._id },
+    //   { rating, orderId, productId, userId: user._id },
+    //   { new: true, upsert: true, runValidators: true }
+    // );
+
+    // update the product rating with atomic aggregation
     const reviews = await Review.find({ productId });
     const totalRating = reviews.reduce((sum, rev) => sum + rev.rating, 0);
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      {
+        averageRating: totalRating / reviews.length,
+        totalReviews: reviews.length,
+      },
+      { new: true, runValidators: true }
+    );
 
-    product.averageRating = totalRating / reviews.length;
-    product.totalReviews = review.length;
-    await product.save();
+    if (!updatedProduct) {
+      await Review.findByIdAndDelete(review._id);
+      return res.status(404).json({ error: "Product not found" });
+    }
 
     res.status(201).json({ message: "Review submitted successfully", review });
   } catch (error) {
