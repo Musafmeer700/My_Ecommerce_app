@@ -5,6 +5,7 @@ import { connectDB } from './config/db.js';
 import { clerkMiddleware } from '@clerk/express'
 import { serve } from 'inngest/express';
 import { functions, inngest } from './config/inngest.js';
+import cors from "cors";
 
 
 import adminRoutes from "./routes/admin.route.js"
@@ -12,6 +13,7 @@ import userRoutes from "./routes/user.route.js"
 import orderRoutes from "./routes/order.route.js"
 import reviewRoutes from "./routes/review.route.js"
 import productRoutes from "./routes/product.route.js"
+import cartRoutes from "./routes/cart.route.js"
 
 
 
@@ -22,6 +24,7 @@ const __dirname = path.resolve();
 //middlewares
 app.use(clerkMiddleware()) //it add req.auth to request
 app.use(express.json())
+app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));// credentials: true allows the browser to send the cookies to the server with the request
 
 
 app.use("/api/inngest", serve({client: inngest, functions}));
@@ -30,6 +33,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
 
 
 //testing
