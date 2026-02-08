@@ -4,7 +4,7 @@ import { Product } from "../models/product.model.js";
 export async function getCart(req, res) {
   try {
     let cart = await Cart.findOne({ clerkId: req.user.clerkId }).populate(
-      "item.product",
+      "items.product",
     );
 
     if (!cart) {
@@ -36,7 +36,7 @@ export async function addToCart(req, res) {
       return res.status(400).json({ error: "Insufficient stock" });
     }
 
-    let cart = await Cart.findOne({clerkId: req.user.clerkId})
+    let cart = await Cart.findOne({ clerkId: req.user.clerkId });
 
     if (!cart) {
       const user = req.user;
@@ -49,10 +49,12 @@ export async function addToCart(req, res) {
     }
 
     // check if item already in the cart
-    const existingItem = cart.items.find((item) => item.product.toString() === productId);
+    const existingItem = cart.items.find(
+      (item) => item.product.toString() === productId,
+    );
     if (existingItem) {
       // increment quantity by 1
-      const newQuantity = existingItem.quantity + 1;
+      const newQuantity = existingItem.quantity + quantity;
       if (product.stock < newQuantity) {
         return res.status(400).json({ error: "Insufficient stock" });
       }
@@ -65,7 +67,6 @@ export async function addToCart(req, res) {
     await cart.save();
 
     res.status(200).json({ message: "Item added to cart", cart });
-
   } catch (error) {
     console.error("Error in addToCart controller:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -74,10 +75,10 @@ export async function addToCart(req, res) {
 
 export async function updateCartItem(req, res) {
   try {
-    const {productId} = req.params;
-    const {quantity} = req.body;
+    const { productId } = req.params;
+    const { quantity } = req.body;
 
-    if (quantity < 1) {
+    if (!quantity || typeof quantity !== "number" || quantity < 1) {
       return res.status(400).json({ error: "Quantity must be at least 1" });
     }
 
@@ -86,7 +87,9 @@ export async function updateCartItem(req, res) {
       return res.status(404).json({ error: "Cart not found" });
     }
 
-    const itemIndex = cart.items.findIndex((item) => item.product.toString() === productId);
+    const itemIndex = cart.items.findIndex(
+      (item) => item.product.toString() === productId,
+    );
     if (itemIndex === -1) {
       return res.status(404).json({ error: "Item not found in cart" });
     }
@@ -120,12 +123,16 @@ export async function removeFromCart(req, res) {
       return res.status(404).json({ error: "Cart not found" });
     }
 
-    cart.items = cart.items.filter((item) => item.product.toString() !== productId);
+    cart.items = cart.items.filter(
+      (item) => item.product.toString() !== productId,
+    );
     await cart.save();
 
     res.status(200).json({ message: "Item removed from cart", cart });
-  } catch (error) {console.error("Error in removeFromCart controller:", error);
-    res.status(500).json({ error: "Internal server error" });}
+  } catch (error) {
+    console.error("Error in removeFromCart controller:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 }
 
 export async function clearCart(req, res) {
@@ -137,6 +144,8 @@ export async function clearCart(req, res) {
 
     cart.items = [];
     await cart.save();
+
+    res.status(200).json({ message: "Cart cleared successfully", cart });
   } catch (error) {
     console.error("Error in clearCart controller:", error);
     res.status(500).json({ error: "Internal server error" });
