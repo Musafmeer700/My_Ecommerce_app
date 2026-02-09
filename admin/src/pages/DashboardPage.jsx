@@ -83,12 +83,12 @@ function DashboardPage() {
                   {recentOrders.map((order) => (
                     <tr key={order._id}>
                       <td>
-                        <span className="font-medium">#{order._id.slice(-8).toUpperCase()}</span>
+                        <span className="font-medium">#{order._id?.slice(-8).toUpperCase()}</span>
                       </td>
 
                       <td>
                         <div>
-                          <div className="font-medium">{order.shippingAddress.fullName}</div>
+                          <div className="font-medium">{order.shippingAddress?.fullName}</div>
                           <div className="text-sm opacity-60">
                             {order.orderItems.length} item(s)
                           </div>
@@ -103,7 +103,7 @@ function DashboardPage() {
                       </td>
 
                       <td>
-                        <span className="font-semibold">${order.totalPrice.toFixed(2)}</span>
+                        <span className="font-semibold">${order.totalPrice?.toFixed(2)}</span>
                       </td>
 
                       <td>

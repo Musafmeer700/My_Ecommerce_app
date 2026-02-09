@@ -8,7 +8,6 @@ const Sidebar = () => {
   const location = useLocation();
   const {user} = useUser();
 
-  console.log("user", user)
   return (
     <div className="drawer-side is-drawer-close:overflow-visible">
       <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
