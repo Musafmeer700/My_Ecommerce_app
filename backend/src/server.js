@@ -50,8 +50,12 @@ if(ENV.NODE_ENV === "production"){
     });
 }
 
-app.listen(ENV.PORT, () => {
-    console.log("server is running 123332");
+app.get("/", (req, res) => {
+  res.send("API is running 🚀");
+});
+
+app.listen(3000, () => {
+    console.log("server is running on", ENV.PORT);
     connectDB();
 });
 
