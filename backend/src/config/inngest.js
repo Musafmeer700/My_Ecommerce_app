@@ -14,6 +14,13 @@ const syncUser = inngest.createFunction(
             await connectDB();
             
             const { id, email_addresses, first_name, last_name, image_url } = event.data;
+
+            const email = email_addresses?.[0]?.email_address;
+            if (!email) {
+                console.error(`No email found for clerkId ${id}`);
+                // Don't retry — this won't resolve on its own
+                return { message: "No email address provided, skipping user creation" };
+            }
             
             // 1. Check if user already exists to avoid duplicate errors
             const existingUser = await User.findOne({ clerkId: id });
