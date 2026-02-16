@@ -50,7 +50,7 @@ export async function createProduct(req, res) {
 
 export async function getAllProducts(_, res) {
   try {
-    const products = (await Product.find()).Sort({ createdAt: -1 }); //-1 means decending(most recents one)
+    const products = await Product.find().sort({ createdAt: -1 }); //-1 means decending(most recents one)
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching product", error);
@@ -161,7 +161,7 @@ export async function getDashboardStats(_, res) {
   try {
     const totalOrders = await Order.countDocuments();
     const revenueResult = await Order.aggregate([
-      +{
+      {
         $group: {
           _id: null,
           total: {
